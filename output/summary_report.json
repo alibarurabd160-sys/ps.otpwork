@@ -1,0 +1,70 @@
+{
+  "generated_at_utc": "2026-11-23T11:09:47Z",
+  "source_files": [
+    "sales_raw.csv"
+  ],
+  "metrics": {
+    "total_input_rows": 12,
+    "valid_rows": 7,
+    "rejected_rows": 5,
+    "total_units_sold": 14,
+    "gross_revenue": 1134.38,
+    "average_order_value": 162.05
+  },
+  "by_category": {
+    "Electronics": {
+      "orders": 4,
+      "units": 8,
+      "revenue": 614.88
+    },
+    "Furniture": {
+      "orders": 2,
+      "units": 5,
+      "revenue": 465.0
+    },
+    "Office Supplies": {
+      "orders": 1,
+      "units": 1,
+      "revenue": 54.5
+    }
+  },
+  "by_region": {
+    "North America": {
+      "orders": 3,
+      "units": 4,
+      "revenue": 628.98
+    },
+    "Asia Pacific": {
+      "orders": 2,
+      "units": 5,
+      "revenue": 305.9
+    },
+    "Europe": {
+      "orders": 2,
+      "units": 5,
+      "revenue": 199.5
+    }
+  },
+  "top_products": [
+    {
+      "product": "Ergonomic Chair",
+      "revenue": 320.0
+    },
+    {
+      "product": "Noise-Canceling Headphones",
+      "revenue": 249.0
+    },
+    {
+      "product": "4K Webcam",
+      "revenue": 179.9
+    },
+    {
+      "product": "Desk Lamp",
+      "revenue": 145.0
+    },
+    {
+      "product": "USB-C Hub",
+      "revenue": 126.0
+    }
+  ]
+}

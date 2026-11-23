@@ -1,0 +1,6 @@
+{
+  "name": "MultiPane API Workspace",
+  "description": "Multi-window web workspace with API number fetching, automatic country code removal, and Render-ready Python source.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

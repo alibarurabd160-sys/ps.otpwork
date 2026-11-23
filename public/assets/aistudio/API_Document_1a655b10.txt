@@ -1,0 +1,100 @@
+TGZ NUMBER & OTP API  (StexSMS-compatible)
+==========================================
+Base URL : https://rcbot-jpeq.onrender.com/api/v1
+Your Key : tgz_2FwCSwLUibNdbIFptafPbf0gK-T8O65M
+
+AUTH   header  mauthapi: <your_api_key>      (also: X-API-Key header, or ?key=<your_api_key>)
+FORMAT every response = { "meta": {"code","status"}, "data", "message", "rid" }
+MONEY  every OTP that arrives on a number YOU took adds that range's rate to YOUR bot balance.
+       The number and its OTP are also sent to your bot inbox automatically.
+LIMITS none. Request as many numbers as you want. A number stays linked to you for 30 minutes.
+
+----------------------------------------------------------------------
+1) GET NUMBER           POST https://rcbot-jpeq.onrender.com/api/v1/getnum
+----------------------------------------------------------------------
+Body: { "rid": "26134" }                  range digits WITHOUT the trailing XXX
+Optional: "callback_url": "https://your-site.com/hook"   (OTP is pushed here instantly)
+OK    : { "meta":{"code":200,"status":"ok"},
+          "data":{ "full_number":"+447404333228", "national_number":"7404333228",
+                   "no_plus_number":"447404333228", "country":"United Kingdom",
+                   "operator":"EE", "rate":0.5 },
+          "message":"number allocated", "rid":"..." }
+Out of stock / unknown range -> meta.code 2946, status "not_found", data null  (HTTP 200, like StexSMS)
+
+----------------------------------------------------------------------
+2) GET OTP              GET https://rcbot-jpeq.onrender.com/api/v1/otp?number=447404333228&wait=25
+----------------------------------------------------------------------
+wait = seconds (0-30). The request is held open and returns THE MOMENT the OTP arrives
+(no polling loop needed => fastest). Without OTP in time: meta.status "waiting", data null.
+OK    : data = { "number","otp","message","service","time" }
+
+----------------------------------------------------------------------
+3) LAST 50 OTPs         GET https://rcbot-jpeq.onrender.com/api/v1/success-otp        (same shape as StexSMS)
+----------------------------------------------------------------------
+data = { "cached":false, "otps":[ {"otp_id","number","message","time","otp","service"} ] }
+
+----------------------------------------------------------------------
+4) BALANCE              GET https://rcbot-jpeq.onrender.com/api/v1/balance
+5) RANGES + RATES       GET https://rcbot-jpeq.onrender.com/api/v1/ranges             data.ranges[] = {range, rate}
+6) LIVE ACCESS          GET https://rcbot-jpeq.onrender.com/api/v1/liveaccess         recently active services/ranges
+7) CONSOLE (15 min)     GET https://rcbot-jpeq.onrender.com/api/v1/console            recent hits (OTP digits masked)
+----------------------------------------------------------------------
+
+WEBHOOK (push, zero delay)
+If getnum had callback_url, we POST JSON when the OTP arrives:
+{ "event":"otp", "otp_id":"...", "number":"447404333228", "otp":"123456",
+  "message":"...", "service":"TELEGRAM", "time":1779460000000 }
+Only public http(s) URLs are accepted. Reply 2xx quickly.
+
+ERRORS  400 bad request | 401 invalid key | 403 banned | 404 unknown/expired number | meta.code 2946 stock out
+
+======================================================================
+FASTEST PATTERN (any bot / app / website backend)
+ 1. POST /getnum              -> number
+ 2. GET  /otp?number=..&wait=25   (or webhook)  -> OTP
+ Reuse one HTTP connection (keep-alive / Session) and run requests in parallel.
+======================================================================
+
+cURL
+  curl -X POST https://rcbot-jpeq.onrender.com/api/v1/getnum -H "mauthapi: tgz_2FwCSwLUibNdbIFptafPbf0gK-T8O65M" -H "Content-Type: application/json" -d '{"rid":"26134"}'
+  curl "https://rcbot-jpeq.onrender.com/api/v1/otp?number=447404333228&wait=25" -H "mauthapi: tgz_2FwCSwLUibNdbIFptafPbf0gK-T8O65M"
+
+Python (requests, keep-alive)
+  import requests
+  s = requests.Session(); s.headers["mauthapi"] = "tgz_2FwCSwLUibNdbIFptafPbf0gK-T8O65M"
+  B = "https://rcbot-jpeq.onrender.com/api/v1"
+  r = s.post(B + "/getnum", json={"rid": "26134"}).json()
+  if r["meta"]["code"] == 200:
+      num = r["data"]["no_plus_number"]
+      while True:
+          o = s.get(B + "/otp", params={"number": num, "wait": 25}).json()
+          if o["data"]:
+              print(o["data"]["otp"]); break
+
+Node.js (18+)
+  const H = { mauthapi: "tgz_2FwCSwLUibNdbIFptafPbf0gK-T8O65M", "Content-Type": "application/json" }, B = "https://rcbot-jpeq.onrender.com/api/v1";
+  const r = await (await fetch(B + "/getnum", { method: "POST", headers: H, body: JSON.stringify({ rid: "26134" }) })).json();
+  if (r.meta.code === 200) {
+    const num = r.data.no_plus_number;
+    let o; do { o = await (await fetch(`${B}/otp?number=${num}&wait=25`, { headers: H })).json(); } while (!o.data);
+    console.log(o.data.otp);
+  }
+
+PHP
+  $B = "https://rcbot-jpeq.onrender.com/api/v1"; $H = ["mauthapi: tgz_2FwCSwLUibNdbIFptafPbf0gK-T8O65M", "Content-Type: application/json"];
+  $c = curl_init("$B/getnum"); curl_setopt_array($c, [CURLOPT_POST=>1, CURLOPT_HTTPHEADER=>$H,
+       CURLOPT_POSTFIELDS=>json_encode(["rid"=>"26134"]), CURLOPT_RETURNTRANSFER=>1]);
+  $r = json_decode(curl_exec($c), true);
+  if ($r["meta"]["code"] == 200) { $num = $r["data"]["no_plus_number"];
+    do { $o = json_decode(file_get_contents("$B/otp?number=$num&wait=25", false,
+         stream_context_create(["http"=>["header"=>"mauthapi: tgz_2FwCSwLUibNdbIFptafPbf0gK-T8O65M"]])), true); } while (!$o["data"]);
+    echo $o["data"]["otp"]; }
+
+TELEGRAM BOT (python-telegram-bot / aiogram): in your /number handler call POST /getnum, send
+  data.full_number to the user, then await GET /otp?wait=25 (use aiohttp) and send data.otp.
+
+WEBSITE / APP: call these endpoints from YOUR BACKEND (never put the key in public JavaScript/app code,
+  anyone could read it and spend your numbers). Your frontend talks to your backend, the backend talks to this API.
+  (CORS is enabled for server-less tools, but keep the key private.)
+
+Lost/leaked key? Bot -> API DOCUMENT -> Regenerate Key (the old key dies instantly).
