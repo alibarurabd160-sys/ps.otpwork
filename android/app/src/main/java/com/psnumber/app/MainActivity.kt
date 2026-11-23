@@ -84,6 +84,8 @@ class MainActivity : AppCompatActivity() {
             setTextColor(Color.parseColor("#E2E8F0"))
             setBackgroundColor(Color.parseColor("#1E293B"))
             setPadding(dp(10), dp(2), dp(10), dp(2))
+            minWidth = 0
+            minimumWidth = 0
             minHeight = dp(28)
             minimumHeight = dp(28)
             setOnClickListener { showConfigureUrlDialog() }
@@ -96,6 +98,8 @@ class MainActivity : AppCompatActivity() {
             setTextColor(Color.parseColor("#0F172A"))
             setBackgroundColor(Color.parseColor("#34D399"))
             setPadding(dp(10), dp(2), dp(10), dp(2))
+            minWidth = 0
+            minimumWidth = 0
             minHeight = dp(28)
             minimumHeight = dp(28)
             layoutParams = LinearLayout.LayoutParams(
@@ -161,8 +165,7 @@ class MainActivity : AppCompatActivity() {
                     if (webView.canGoBack()) {
                         webView.goBack()
                     } else {
-                        isEnabled = false
-                        onBackPressedDispatcher.onBackPressed()
+                        finish()
                     }
                 }
             }
