@@ -20,22 +20,26 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
 
       - name: Build Debug APK
         run: |
           if [ -f "./gradlew" ]; then
             chmod +x ./gradlew
-            ./gradlew assembleDebug
+            ./gradlew assembleDebug --no-daemon
           elif [ -f "./android/gradlew" ]; then
-            if [ -f "./package.json" ]; then
-              npm ci && npm run build
-            fi
             chmod +x ./android/gradlew
-            cd android && ./gradlew assembleDebug
+            cd android && ./gradlew assembleDebug --no-daemon
+          elif [ -f "./android/settings.gradle.kts" ] || [ -f "./android/settings.gradle" ]; then
+            cd android && gradle assembleDebug --no-daemon
           else
-            echo "No Android Gradle project found (missing ./gradlew or ./android/gradlew)."
+            echo "No Android Gradle project found."
             exit 1
           fi
 

@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">PS Number</string>
+    <string name="server_url_button">Server URL</string>
+    <string name="reload_button">Reload</string>
+    <string name="configure_url_title">App Server URL (HTTPS)</string>
+    <string name="configure_url_hint">https://your-app-url</string>
+    <string name="save_label">Save</string>
+    <string name="cancel_label">Cancel</string>
+    <string name="reset_label">Default</string>
+    <string name="invalid_url_error">Please enter a valid https:// URL.</string>
+    <string name="offline_title">Unable to connect to PS Number server</string>
+    <string name="offline_subtitle">Check your internet connection or update the hosted HTTPS Server URL.</string>
+</resources>
